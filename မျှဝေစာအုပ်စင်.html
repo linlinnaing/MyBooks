@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>မျှဝေစာအုပ်စင်</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;700&display=swap">
+<style>
+:root{
+  --bg:#EAF3FF;--ink:#1B1633;--muted:#575274;--surface:#FFFFFF;
+  --red:#FF4D2E;--yellow:#FFC62E;--teal:#00A89D;--violet:#6B4EFF;--pink:#FF7AB8;--fixed:#1B1633;
+  --f:"Noto Sans Myanmar","Myanmar Text",Padauk,system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#130F2B;--ink:#F4F1FF;--muted:#B0ABD6;--surface:#221B47}}
+:root[data-theme="dark"]{--bg:#130F2B;--ink:#F4F1FF;--muted:#B0ABD6;--surface:#221B47}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.8 var(--f)}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 18px 60px}
+h1{margin:0;font:700 clamp(32px,6vw,56px)/1.4 var(--f)}
+.lead{margin:0 0 22px;color:var(--muted)}
+button,input{font:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+.up{background:var(--yellow);color:var(--fixed);border-radius:28px;padding:22px 24px;margin-bottom:26px}
+.up h2{margin:0 0 10px;font:700 22px/1.5 var(--f)}
+.fields{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;align-items:end}
+.fields label{display:block;font-size:14px;font-weight:700}
+.fields input[type=text]{width:100%;padding:10px 12px;border:2px solid var(--fixed);border-radius:12px;background:#fff;color:var(--fixed)}
+.fields input[type=file]{width:100%;padding:8px;border:2px dashed var(--fixed);border-radius:12px;background:#fff;color:var(--fixed)}
+.go{background:var(--fixed);color:#fff;border:0;border-radius:12px;padding:12px 20px;font-weight:700;cursor:pointer}
+.go:disabled{opacity:.6;cursor:wait}
+.note{margin:8px 0 0;font-size:14px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.bar input{flex:1 1 260px;max-width:420px;padding:11px 16px;border-radius:999px;border:2px solid var(--ink);background:var(--surface);color:var(--ink)}
+#count{font-weight:700}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.book{background:var(--surface);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.book.hl{outline:4px solid var(--violet)}
+.cover{height:150px;display:flex;align-items:center;justify-content:center;position:relative;font:700 78px/1 var(--f)}
+.tag{position:absolute;top:10px;right:10px;font:700 12px/1 var(--f);background:rgba(255,255,255,.9);color:var(--fixed);padding:6px 9px;border-radius:999px}
+.info{padding:14px 16px 16px;display:flex;flex-direction:column;gap:2px;flex:1}
+.info h3{margin:0;font:700 17px/1.6 var(--f);overflow-wrap:anywhere}
+.info p{margin:0;color:var(--muted);font-size:14px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:12px}
+.acts button{border-radius:999px;padding:7px 14px;font-weight:700;font-size:14px;cursor:pointer;border:2px solid var(--ink);background:transparent;color:var(--ink)}
+.acts .dl{background:var(--ink);color:var(--bg)}
+.acts .rm{border-color:transparent;color:var(--red);padding-inline:6px}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--muted)}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fixed);color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;max-width:90vw;overflow-wrap:anywhere;z-index:9}
+.acts .rd{background:var(--violet);border-color:var(--violet);color:#fff}
+.reader{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.rhead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:10px 14px;background:var(--violet);color:#fff}
+.rhead h2{margin:0;font:700 17px/1.5 var(--f);flex:1 1 160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rhead button{border:2px solid #fff;background:transparent;color:#fff;border-radius:999px;padding:5px 13px;font-weight:700;cursor:pointer}
+.rhead button:focus-visible{outline-color:#fff}
+.rtools{display:flex;align-items:center;gap:6px}
+#rbody{flex:1;overflow:auto;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));text-align:center}
+#rbody canvas{box-shadow:0 4px 20px rgba(0,0,0,.25);background:#fff}
+.txt{max-width:46em;margin:0 auto;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;background:var(--surface);padding:22px;border-radius:16px}
+[hidden]{display:none!important}
+@media (max-width:860px){.fields{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>မျှဝေစာအုပ်စင်</h1>
+  <p class="lead">စာအုပ်တင်ပါ၊ ဒေါင်းလုဒ်လုပ်ပါ၊ မိတ်ဆွေတွေကို မျှဝေပါ</p>
+
+  <p id="msg" class="empty" hidden>ဤစာအုပ်စင်ကို ကြည့်ရန် claude.ai တွင် sign in ဝင်ထားရပါမည်။</p>
+
+  <section class="up" id="up" hidden>
+    <h2>စာအုပ်အသစ်တင်ရန်</h2>
+    <form id="form" class="fields">
+      <div><label for="file">ဖိုင်</label><input id="file" type="file" accept=".pdf,.txt,.md"></div>
+      <div><label for="title">စာအုပ်အမည်</label><input id="title" type="text" maxlength="120"></div>
+      <div><label for="author">စာရေးသူ</label><input id="author" type="text" maxlength="80"></div>
+      <button class="go" id="go" type="submit">စာအုပ်တင်မည်</button>
+    </form>
+    <p class="note">PDF, TXT, MD ဖိုင်များ တင်နိုင်ပါသည်။ တစ်ဖိုင်လျှင် ၂၀ MB အထိ။</p>
+  </section>
+
+  <div class="bar">
+    <input id="q" type="search" placeholder="စာအုပ်အမည် သို့မဟုတ် စာရေးသူ ရှာပါ" aria-label="ရှာဖွေရန်">
+    <span id="count" aria-live="polite"></span>
+  </div>
+  <main class="shelf" id="shelf"></main>
+</div>
+<div class="reader" id="reader" role="dialog" aria-modal="true" aria-label="စာအုပ်ဖတ်ရန်" hidden>
+  <div class="rhead"><h2 id="rtitle"></h2>
+    <div class="rtools" id="rpdf" hidden><button id="rprev" aria-label="ရှေ့စာမျက်နှာ">‹</button><span id="pginfo"></span><button id="rnext" aria-label="နောက်စာမျက်နှာ">›</button><button id="rzm" aria-label="ချုံ့မည်">−</button><button id="rzp" aria-label="ချဲ့မည်">+</button></div>
+    <div class="rtools" id="rtxt" hidden><button id="fsm" aria-label="စာလုံးသေးမည်">A−</button><button id="fsp" aria-label="စာလုံးကြီးမည်">A+</button></div>
+    <button id="rdl">ဒေါင်းလုဒ်</button><button id="rclose">ပိတ်မည်</button></div>
+  <div id="rbody"></div>
+</div>
+<div id="toast" role="status" hidden></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const PAL=['#FF4D2E','#FFC62E','#00A89D','#6B4EFF','#FF7AB8'],TXT=['#fff','#1B1633','#fff','#fff','#1B1633'];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let db=null,assets=null,dl=null,books=[],q='',armed=null,jumped=false;
+
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,3500)}
+function first(s){try{return[...new Intl.Segmenter('my',{granularity:'grapheme'}).segment(s)][0].segment}catch(e){return Array.from(s)[0]||'?'}}
+function hash(s){let h=0;for(const c of s)h=(h*31+c.codePointAt(0))>>>0;return h}
+function fmt(b){return b<1048576?Math.max(1,Math.round(b/1024))+' KB':(b/1048576).toFixed(1)+' MB'}
+
+function render(){
+  const k=q.trim().toLowerCase();
+  const list=books.filter(b=>!k||(b.title+' '+b.author).toLowerCase().includes(k));
+  $('#count').textContent=list.length+' အုပ်';
+  if(!list.length){$('#shelf').innerHTML='<p class="empty">'+(books.length?'ရှာမတွေ့ပါ။':'စာအုပ်မရှိသေးပါ။'+(assets?' ပထမဆုံးစာအုပ်ကို တင်လိုက်ပါ။':''))+'</p>';return}
+  const hid=location.hash.slice(1);
+  $('#shelf').innerHTML=list.map(b=>{
+    const i=hash(b.title)%PAL.length;
+    return '<article class="book'+(b.id===hid?' hl':'')+'" id="b-'+esc(b.id)+'">'
+    +'<div class="cover" style="background:'+PAL[i]+';color:'+TXT[i]+'">'+esc(first(b.title))+'<span class="tag">'+esc(b.ext.toUpperCase())+'</span></div>'
+    +'<div class="info"><h3>'+esc(b.title)+'</h3><p>'+esc(b.author)+'</p><p>'+fmt(b.size)+' · '+new Date(b.createdAt).toLocaleDateString('en-GB')+'</p>'
+    +'<div class="acts"><button class="rd" data-act="read" data-id="'+esc(b.id)+'">ဖတ်မည်</button><button class="dl" data-act="dl" data-id="'+esc(b.id)+'">ဒေါင်းလုဒ်</button>'
+    +'<button data-act="share" data-id="'+esc(b.id)+'">မျှဝေ</button>'
+    +(assets?'<button class="rm" data-act="rm" data-id="'+esc(b.id)+'">'+(armed===b.id?'အတည်ပြုရန် ထပ်နှိပ်ပါ':'ဖျက်မည်')+'</button>':'')
+    +'</div></div></article>'}).join('');
+  if(!jumped&&hid){const el=document.getElementById('b-'+hid);if(el){jumped=true;el.scrollIntoView({block:'center'})}}
+}
+
+async function download(b){
+  const url='/_blob/'+b.assetId;
+  if(!dl){window.open(url,'_blank');return}
+  try{
+    const r=await fetch(url);if(!r.ok)throw new Error('fetch');
+    await dl.save({filename:b.title.replace(/[\\/:*?"<>|]/g,' ')+'.'+b.ext,data:await r.blob()});
+    toast('ဒေါင်းလုဒ်လုပ်ပြီးပါပြီ');
+  }catch(e){if(e&&e.code==='declined')return;toast('ဒေါင်းလုဒ် မအောင်မြင်ပါ။ ထပ်ကြိုးစားပါ')}
+}
+async function share(b){
+  const url=location.href.split('#')[0]+'#'+b.id;
+  try{if(navigator.share){await navigator.share({title:b.title,text:b.title+' – '+b.author,url});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(url);toast('လင့်ခ်ကို ကူးယူပြီးပါပြီ')}catch(e){toast(url)}
+}
+async function remove(b){
+  if(armed!==b.id){armed=b.id;render();setTimeout(()=>{if(armed===b.id){armed=null;render()}},4000);return}
+  armed=null;
+  try{await db.collection('books').doc(b.id).delete();await assets.delete(b.assetId);toast('ဖျက်ပြီးပါပြီ')}
+  catch(e){toast('ဖျက်၍ မရပါ')}
+}
+
+let cur=null,pdfDoc=null,pg=1,scale=1.2,fs=19,rtoken=0,busy=false;
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
+async function ensurePdf(){const base='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';if(!window.pdfjsLib)await loadScript(base+'pdf.min.js');if(!window.pdfjsWorker)await loadScript(base+'pdf.worker.min.js')}
+async function drawPage(my){if(busy)return;busy=true;try{const p=await pdfDoc.getPage(pg);const dpr=window.devicePixelRatio||1,v=p.getViewport({scale:scale*dpr}),cv=$('#cv');if(!cv||my!==rtoken)return;cv.width=v.width;cv.height=v.height;cv.style.width=v.width/dpr+'px';cv.style.height=v.height/dpr+'px';await p.render({canvasContext:cv.getContext('2d'),viewport:v}).promise;$('#pginfo').textContent=pg+' / '+pdfDoc.numPages}finally{busy=false}}
+function gotoPage(n){if(!pdfDoc||n<1||n>pdfDoc.numPages)return;pg=n;$('#rbody').scrollTop=0;drawPage(rtoken)}
+function zoom(f){if(!pdfDoc)return;scale=Math.max(.5,Math.min(3,scale*f));drawPage(rtoken)}
+function applyFs(){const t=$('#txt');if(t)t.style.fontSize=fs+'px'}
+async function openReader(b){
+  const my=++rtoken;cur=b;pdfDoc=null;
+  $('#rtitle').textContent=b.title;$('#reader').hidden=false;document.body.style.overflow='hidden';
+  $('#rpdf').hidden=b.ext!=='pdf';$('#rtxt').hidden=b.ext==='pdf';
+  $('#rbody').innerHTML='<p class="empty">ဖွင့်နေသည်...</p>';
+  try{
+    const url='/_blob/'+b.assetId;
+    if(b.ext==='pdf'){
+      await ensurePdf();
+      const data=await (await fetch(url)).arrayBuffer();
+      if(my!==rtoken)return;
+      const doc=await pdfjsLib.getDocument({data:data}).promise;
+      const p1=await doc.getPage(1);
+      if(my!==rtoken)return;
+      pdfDoc=doc;pg=1;
+      scale=Math.max(.6,Math.min(1.6,($('#rbody').clientWidth-28)/p1.getViewport({scale:1}).width));
+      $('#rbody').innerHTML='<canvas id="cv"></canvas>';
+      await drawPage(my);
+    }else{
+      const t=await (await fetch(url)).text();
+      if(my!==rtoken)return;
+      $('#rbody').innerHTML='<article class="txt" id="txt"></article>';$('#txt').textContent=t;applyFs();
+    }
+  }catch(e){if(my===rtoken)$('#rbody').innerHTML='<p class="empty">ဤနေရာတွင် ဖတ်၍ မရပါ။ ဒေါင်းလုဒ်လုပ်ပြီး ဖတ်ပါ။</p>'}
+}
+function closeReader(){rtoken++;pdfDoc=null;$('#reader').hidden=true;$('#rbody').innerHTML='';document.body.style.overflow=''}
+$('#rclose').onclick=closeReader;
+$('#rprev').onclick=()=>gotoPage(pg-1);
+$('#rnext').onclick=()=>gotoPage(pg+1);
+$('#rzm').onclick=()=>zoom(.85);
+$('#rzp').onclick=()=>zoom(1.2);
+$('#rdl').onclick=()=>{if(cur)download(cur)};
+$('#fsm').onclick=()=>{fs=Math.max(14,fs-2);applyFs()};
+$('#fsp').onclick=()=>{fs=Math.min(34,fs+2);applyFs()};
+document.addEventListener('keydown',e=>{if($('#reader').hidden)return;if(e.key==='Escape')closeReader();else if(pdfDoc&&e.key==='ArrowRight')gotoPage(pg+1);else if(pdfDoc&&e.key==='ArrowLeft')gotoPage(pg-1)});
+$('#shelf').addEventListener('click',e=>{
+  const t=e.target.closest('button[data-act]');if(!t)return;
+  const b=books.find(x=>x.id===t.dataset.id);if(!b)return;
+  ({read:openReader,dl:download,share:share,rm:remove})[t.dataset.act](b);
+});
+$('#q').addEventListener('input',e=>{q=e.target.value;render()});
+$('#file').addEventListener('change',e=>{
+  const f=e.target.files[0];if(f&&!$('#title').value)$('#title').value=f.name.replace(/\.[^.]+$/,'');
+});
+$('#form').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const f=$('#file').files[0];if(!f){toast('ဖိုင်ရွေးပါ');return}
+  const ext=(f.name.split('.').pop()||'').toLowerCase();
+  const types={pdf:'application/pdf',txt:'text/plain',md:'text/markdown'};
+  if(!types[ext]){toast('PDF, TXT, MD ဖိုင်များသာ တင်နိုင်ပါသည်');return}
+  const btn=$('#go');btn.disabled=true;btn.textContent='တင်နေသည်...';
+  try{
+    const r=await assets.upload(f,{type:types[ext]});
+    await db.collection('books').add({
+      title:$('#title').value.trim()||f.name.replace(/\.[^.]+$/,''),
+      author:$('#author').value.trim()||'အမည်မသိ',
+      assetId:r.id,ext:ext,size:r.sizeBytes,createdAt:Date.now()});
+    e.target.reset();toast('စာအုပ်တင်ပြီးပါပြီ');
+  }catch(err){
+    toast(err.code==='too_large'?'ဖိုင်က ၂၀ MB ထက် ကြီးနေပါသည်':err.code==='quota_or_state'?'သိမ်းဆည်းနေရာ ပြည့်နေပါသည်':'တင်၍ မရပါ။ ထပ်ကြိုးစားပါ');
+  }
+  btn.disabled=false;btn.textContent='စာအုပ်တင်မည်';
+});
+
+(async()=>{
+  render();
+  try{
+    const c=window.claude;
+    [db,assets,dl]=await Promise.all([c.use('db'),c.use('assets'),c.use('downloads')]);
+  }catch(e){}
+  if(!db){$('#msg').hidden=false;$('#shelf').innerHTML='';return}
+  if(assets)$('#up').hidden=false;
+  db.collection('books').orderBy('createdAt','desc').onSnapshot(
+    s=>{books=s.docs.map(d=>Object.assign({id:d.id},d.data()));render()},
+    ()=>{$('#msg').hidden=false}
+  );
+})();
+</script>
+</body>
+</html>
