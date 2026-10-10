@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>မျှဝေစာအုပ်စင်</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;700&display=swap">
+<style>
+:root{
+  --bg:#EAF3FF;--ink:#1B1633;--muted:#575274;--surface:#FFFFFF;
+  --red:#FF4D2E;--yellow:#FFC62E;--teal:#00A89D;--violet:#6B4EFF;--pink:#FF7AB8;--fixed:#1B1633;
+  --f:"Noto Sans Myanmar","Myanmar Text",Padauk,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#130F2B;--ink:#F4F1FF;--muted:#B0ABD6;--surface:#221B47}}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.8 var(--f)}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 18px 60px}
+h1{margin:0;font:700 clamp(32px,6vw,56px)/1.4 var(--f)}
+.lead{margin:0 0 22px;color:var(--muted)}
+button,input{font:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.bar input{flex:1 1 260px;max-width:420px;padding:11px 16px;border-radius:999px;border:2px solid var(--ink);background:var(--surface);color:var(--ink)}
+#count{font-weight:700}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.book{background:var(--surface);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.book.hl{outline:4px solid var(--violet)}
+.cover{height:150px;display:flex;align-items:center;justify-content:center;position:relative;font:700 78px/1 var(--f)}
+.tag{position:absolute;top:10px;right:10px;font:700 12px/1 var(--f);background:rgba(255,255,255,.9);color:var(--fixed);padding:6px 9px;border-radius:999px}
+.info{padding:14px 16px 16px;display:flex;flex-direction:column;gap:2px;flex:1}
+.info h3{margin:0;font:700 17px/1.6 var(--f);overflow-wrap:anywhere}
+.info p{margin:0;color:var(--muted);font-size:14px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:12px}
+.acts button,.acts a{border-radius:999px;padding:7px 14px;font-weight:700;font-size:14px;cursor:pointer;border:2px solid var(--ink);background:transparent;color:var(--ink);text-decoration:none;line-height:1.7}
+.acts .rd{background:var(--violet);border-color:var(--violet);color:#fff}
+.acts .dl{background:var(--ink);color:var(--bg)}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--muted)}
+.reader{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column}
+.rhead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:10px 14px;background:var(--violet);color:#fff}
+.rhead h2{margin:0;font:700 17px/1.5 var(--f);flex:1 1 160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rhead button{border:2px solid #fff;background:transparent;color:#fff;border-radius:999px;padding:5px 13px;font-weight:700;cursor:pointer}
+.rhead button:focus-visible{outline-color:#fff}
+.rtools{display:flex;align-items:center;gap:6px}
+#rbody{flex:1;overflow:auto;padding:14px;text-align:center}
+#rbody canvas{box-shadow:0 4px 20px rgba(0,0,0,.25);background:#fff}
+.txt{max-width:46em;margin:0 auto;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.95;background:var(--surface);padding:22px;border-radius:16px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;background:var(--fixed);color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;max-width:90vw;overflow-wrap:anywhere;z-index:30}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>မျှဝေစာအုပ်စင်</h1>
+  <p class="lead">စာအုပ်တွေကို ဝင်ဖတ်ပါ၊ ဒေါင်းလုဒ်လုပ်ပါ၊ မိတ်ဆွေတွေကို မျှဝေပါ</p>
+  <div class="bar">
+    <input id="q" type="search" placeholder="စာအုပ်အမည် သို့မဟုတ် စာရေးသူ ရှာပါ" aria-label="ရှာဖွေရန်">
+    <span id="count" aria-live="polite"></span>
+  </div>
+  <main class="shelf" id="shelf"></main>
+</div>
+
+<div class="reader" id="reader" role="dialog" aria-modal="true" aria-label="စာအုပ်ဖတ်ရန်" hidden>
+  <div class="rhead"><h2 id="rtitle"></h2>
+    <div class="rtools" id="rpdf" hidden><button id="rprev" aria-label="ရှေ့စာမျက်နှာ">‹</button><span id="pginfo"></span><button id="rnext" aria-label="နောက်စာမျက်နှာ">›</button><button id="rzm" aria-label="ချုံ့မည်">−</button><button id="rzp" aria-label="ချဲ့မည်">+</button></div>
+    <div class="rtools" id="rtxt" hidden><button id="fsm" aria-label="စာလုံးသေးမည်">A−</button><button id="fsp" aria-label="စာလုံးကြီးမည်">A+</button></div>
+    <button id="rdl">ဒေါင်းလုဒ်</button><button id="rclose">ပိတ်မည်</button></div>
+  <div id="rbody"></div>
+</div>
+<div id="toast" role="status" hidden></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const PAL=['#FF4D2E','#FFC62E','#00A89D','#6B4EFF','#FF7AB8'],TXT=['#fff','#1B1633','#fff','#fff','#1B1633'];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let books=[],q='',jumped=false,cur=null,pdfDoc=null,pg=1,scale=1.2,fs=19,rtoken=0,busy=false;
+
+const ext=b=>(b.file.split('.').pop()||'').toLowerCase();
+const bid=b=>b.id||b.file.split('/').pop().replace(/\.[^.]+$/,'');
+const furl=b=>encodeURI(b.file);
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,3500)}
+function first(s){try{return[...new Intl.Segmenter('my',{granularity:'grapheme'}).segment(s)][0].segment}catch(e){return Array.from(s)[0]||'?'}}
+function hash(s){let h=0;for(const c of s)h=(h*31+c.codePointAt(0))>>>0;return h}
+
+function render(){
+  const k=q.trim().toLowerCase();
+  const list=books.filter(b=>!k||((b.title||'')+' '+(b.author||'')).toLowerCase().includes(k));
+  $('#count').textContent=list.length+' အုပ်';
+  if(!list.length){$('#shelf').innerHTML='<p class="empty">'+(books.length?'ရှာမတွေ့ပါ။':'စာအုပ်မရှိသေးပါ။')+'</p>';return}
+  let hid='';try{hid=decodeURIComponent(location.hash.slice(1))}catch(e){}
+  $('#shelf').innerHTML=list.map(b=>{
+    const i=hash(b.title||b.file)%PAL.length,id=esc(bid(b));
+    return '<article class="book'+(bid(b)===hid?' hl':'')+'" id="b-'+id+'">'
+    +'<div class="cover" style="background:'+PAL[i]+';color:'+TXT[i]+'">'+esc(first(b.title||'?'))+'<span class="tag">'+esc(ext(b).toUpperCase())+'</span></div>'
+    +'<div class="info"><h3>'+esc(b.title||b.file)+'</h3><p>'+esc(b.author||'')+'</p>'
+    +'<div class="acts"><button class="rd" data-act="read" data-id="'+id+'">ဖတ်မည်</button>'
+    +'<a class="dl" href="'+esc(furl(b))+'" download>ဒေါင်းလုဒ်</a>'
+    +'<button data-act="share" data-id="'+id+'">မျှဝေ</button></div></div></article>'}).join('');
+  if(!jumped&&hid){const el=document.getElementById('b-'+hid);if(el){jumped=true;el.scrollIntoView({block:'center'})}}
+}
+
+async function share(b){
+  const url=location.href.split('#')[0]+'#'+encodeURIComponent(bid(b));
+  try{if(navigator.share){await navigator.share({title:b.title,text:(b.title||'')+' – '+(b.author||''),url:url});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(url);toast('လင့်ခ်ကို ကူးယူပြီးပါပြီ')}catch(e){toast(url)}
+}
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
+async function ensurePdf(){const base='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';if(!window.pdfjsLib)await loadScript(base+'pdf.min.js');if(!window.pdfjsWorker)await loadScript(base+'pdf.worker.min.js')}
+async function drawPage(my){
+  if(busy)return;busy=true;
+  try{
+    const p=await pdfDoc.getPage(pg),dpr=window.devicePixelRatio||1,v=p.getViewport({scale:scale*dpr}),cv=$('#cv');
+    if(!cv||my!==rtoken)return;
+    cv.width=v.width;cv.height=v.height;cv.style.width=v.width/dpr+'px';cv.style.height=v.height/dpr+'px';
+    await p.render({canvasContext:cv.getContext('2d'),viewport:v}).promise;
+    $('#pginfo').textContent=pg+' / '+pdfDoc.numPages;
+  }finally{busy=false}
+}
+function gotoPage(n){if(!pdfDoc||n<1||n>pdfDoc.numPages)return;pg=n;$('#rbody').scrollTop=0;drawPage(rtoken)}
+function zoom(f){if(!pdfDoc)return;scale=Math.max(.5,Math.min(3,scale*f));drawPage(rtoken)}
+function applyFs(){const t=$('#txt');if(t)t.style.fontSize=fs+'px'}
+async function openReader(b){
+  const my=++rtoken;cur=b;pdfDoc=null;
+  $('#rtitle').textContent=b.title||b.file;$('#reader').hidden=false;document.body.style.overflow='hidden';
+  const pdf=ext(b)==='pdf';$('#rpdf').hidden=!pdf;$('#rtxt').hidden=pdf;
+  $('#rbody').innerHTML='<p class="empty">ဖွင့်နေသည်...</p>';
+  try{
+    if(pdf){
+      await ensurePdf();
+      const data=await (await fetch(furl(b))).arrayBuffer();
+      if(my!==rtoken)return;
+      const doc=await pdfjsLib.getDocument({data:data}).promise,p1=await doc.getPage(1);
+      if(my!==rtoken)return;
+      pdfDoc=doc;pg=1;
+      scale=Math.max(.6,Math.min(1.6,($('#rbody').clientWidth-28)/p1.getViewport({scale:1}).width));
+      $('#rbody').innerHTML='<canvas id="cv"></canvas>';
+      await drawPage(my);
+    }else{
+      const r=await fetch(furl(b));if(!r.ok)throw new Error('fetch');
+      const t=await r.text();
+      if(my!==rtoken)return;
+      $('#rbody').innerHTML='<article class="txt" id="txt"></article>';$('#txt').textContent=t;applyFs();
+    }
+  }catch(e){if(my===rtoken)$('#rbody').innerHTML='<p class="empty">ဤနေရာတွင် ဖတ်၍ မရပါ။ ဒေါင်းလုဒ်လုပ်ပြီး ဖတ်ပါ။</p>'}
+}
+function closeReader(){rtoken++;pdfDoc=null;$('#reader').hidden=true;$('#rbody').innerHTML='';document.body.style.overflow=''}
+
+$('#shelf').addEventListener('click',e=>{
+  const t=e.target.closest('button[data-act]');if(!t)return;
+  const b=books.find(x=>bid(x)===t.dataset.id);if(!b)return;
+  ({read:openReader,share:share})[t.dataset.act](b);
+});
+$('#q').addEventListener('input',e=>{q=e.target.value;render()});
+$('#rclose').onclick=closeReader;
+$('#rprev').onclick=()=>gotoPage(pg-1);
+$('#rnext').onclick=()=>gotoPage(pg+1);
+$('#rzm').onclick=()=>zoom(.85);
+$('#rzp').onclick=()=>zoom(1.2);
+$('#rdl').onclick=()=>{if(!cur)return;const a=document.createElement('a');a.href=furl(cur);a.download='';document.body.appendChild(a);a.click();a.remove()};
+$('#fsm').onclick=()=>{fs=Math.max(14,fs-2);applyFs()};
+$('#fsp').onclick=()=>{fs=Math.min(34,fs+2);applyFs()};
+document.addEventListener('keydown',e=>{
+  if($('#reader').hidden)return;
+  if(e.key==='Escape')closeReader();
+  else if(pdfDoc&&e.key==='ArrowRight')gotoPage(pg+1);
+  else if(pdfDoc&&e.key==='ArrowLeft')gotoPage(pg-1);
+});
+
+fetch('books.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('json');return r.json()})
+  .then(d=>{books=(Array.isArray(d)?d:[]).filter(b=>b&&b.file);render()})
+  .catch(()=>{$('#shelf').innerHTML='<p class="empty">books.json ကို ဖတ်၍ မရပါ။ ဝက်ဘ်ဆိုက်အဖြစ် တင်ပြီးမှ ဖွင့်ပါ (ဖိုင်ကို တိုက်ရိုက် double-click ဖွင့်ရင် အလုပ်မလုပ်ပါ)။</p>'});
+</script>
+</body>
+</html>
